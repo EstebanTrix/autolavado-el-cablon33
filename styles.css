@@ -269,3 +269,236 @@ body.noise::before { content:''; position:fixed; inset:0; background-image:url("
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+
+/* Sección Califícanos */
+.section-calificacion {
+  padding: 60px 0;
+  background: linear-gradient(135deg, #0a0a0c 0%, #121214 100%);
+}
+
+.calificacion-sub {
+  text-align: center;
+  color: #888;
+  margin-bottom: 40px;
+}
+
+.calificacion-container {
+  max-width: 600px;
+  margin: 0 auto 50px;
+}
+
+.verificar-card, .calificar-card {
+  background: #1a1a1e;
+  border: 1px solid #2e2e35;
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 20px;
+}
+
+.verificar-header, .calificar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.verificar-icon, .calificar-icon {
+  font-size: 32px;
+}
+
+.verificar-card h3, .calificar-card h3 {
+  color: white;
+  margin: 0;
+  font-size: 20px;
+}
+
+.verificar-card p {
+  color: #888;
+  margin-bottom: 20px;
+}
+
+.verificar-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.verificar-input {
+  flex: 1;
+  padding: 14px 16px;
+  background: #0a0a0c;
+  border: 1px solid #2e2e35;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+}
+
+.verificar-btn {
+  background: #fb923c;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.verificar-btn:hover {
+  background: #f97316;
+  transform: scale(1.02);
+}
+
+.verificar-error, .calif-error {
+  color: #ef4444;
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Estrellas de calificación */
+.calificacion-estrellas {
+  margin-bottom: 20px;
+}
+
+.calificacion-estrellas span {
+  display: block;
+  margin-bottom: 10px;
+  color: #ccc;
+}
+
+.stars-calificar {
+  display: flex;
+  gap: 8px;
+}
+
+.star-calif {
+  background: none;
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+  color: #444;
+  transition: all 0.2s;
+}
+
+.star-calif.active {
+  color: #fb923c;
+  text-shadow: 0 0 5px rgba(251, 146, 60, 0.5);
+}
+
+.star-calif:hover {
+  transform: scale(1.1);
+}
+
+/* Comentario */
+.calificacion-comentario {
+  margin-bottom: 20px;
+}
+
+.calificacion-comentario span {
+  display: block;
+  margin-bottom: 10px;
+  color: #ccc;
+}
+
+.calificacion-comentario textarea {
+  width: 100%;
+  padding: 14px;
+  background: #0a0a0c;
+  border: 1px solid #2e2e35;
+  border-radius: 12px;
+  color: white;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.enviar-calif-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.enviar-calif-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 20px rgba(34, 197, 94, 0.3);
+}
+
+.calif-exito {
+  text-align: center;
+  color: #22c55e;
+  margin-top: 15px;
+  padding: 10px;
+  background: #22c55e1a;
+  border-radius: 10px;
+}
+
+/* Lista de calificaciones */
+.calificaciones-lista {
+  max-width: 800px;
+  margin: 40px auto 0;
+}
+
+.promedio-card {
+  background: linear-gradient(135deg, #fb923c20, #f9731620);
+  border: 1px solid #fb923c40;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.promedio-numero {
+  font-size: 48px;
+  font-weight: 800;
+  color: #fb923c;
+}
+
+.promedio-estrellas {
+  font-size: 24px;
+  letter-spacing: 4px;
+}
+
+.lista-comentarios {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.comentario-item {
+  background: #1a1a1e;
+  border: 1px solid #2e2e35;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.comentario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.comentario-estrellas {
+  color: #fb923c;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.comentario-fecha {
+  color: #666;
+  font-size: 12px;
+}
+
+.comentario-texto {
+  color: #ccc;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}

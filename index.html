@@ -121,6 +121,69 @@
     </div>
   </section>
 
+<!-- Sección Califícanos (solo para clientes) -->
+<section id="calificanos" class="section-calificacion">
+  <div class="container">
+    <h2 class="section-title">⭐ Califícanos</h2>
+    <p class="calificacion-sub">Eres cliente verificable? Ingresa tu número de orden para calificarnos.</p>
+    
+    <div class="calificacion-container">
+      <!-- Verificación de orden -->
+      <div id="verificar-orden" class="verificar-card">
+        <div class="verificar-header">
+          <span class="verificar-icon">🔐</span>
+          <h3>Verifica tu orden</h3>
+        </div>
+        <p>Ingresa el número de orden que recibiste al agendar tu cita.</p>
+        <div class="verificar-input-group">
+          <input type="text" id="orden-verificar" placeholder="Ej: L-123456" class="verificar-input">
+          <button onclick="verificarOrden()" class="verificar-btn">Verificar →</button>
+        </div>
+        <div id="verificar-error" class="verificar-error hidden">⚠️ Número de orden inválido o ya fue calificado.</div>
+      </div>
+
+      <!-- Formulario de calificación (oculto hasta verificar) -->
+      <div id="form-calificar" class="calificar-card hidden">
+        <div class="calificar-header">
+          <span class="calificar-icon">⭐</span>
+          <h3>¡Califica tu experiencia!</h3>
+          <p id="orden-verificada" class="orden-verificada"></p>
+        </div>
+        
+        <!-- Estrellas -->
+        <div class="calificacion-estrellas">
+          <span>Tu calificación:</span>
+          <div class="stars-calificar" id="stars-calificar">
+            <button class="star-calif" data-val="1" onclick="setCalificacion(1)">☆</button>
+            <button class="star-calif" data-val="2" onclick="setCalificacion(2)">☆</button>
+            <button class="star-calif" data-val="3" onclick="setCalificacion(3)">☆</button>
+            <button class="star-calif" data-val="4" onclick="setCalificacion(4)">☆</button>
+            <button class="star-calif" data-val="5" onclick="setCalificacion(5)">☆</button>
+          </div>
+        </div>
+
+        <!-- Comentario -->
+        <div class="calificacion-comentario">
+          <span>Tu opinión (opcional):</span>
+          <textarea id="comentario-calificacion" rows="3" placeholder="Cuéntanos cómo fue tu experiencia..."></textarea>
+        </div>
+
+        <!-- Botón enviar -->
+        <button onclick="enviarCalificacion()" class="enviar-calif-btn">📝 Enviar calificación</button>
+        <div id="calif-exito" class="calif-exito hidden">✅ ¡Gracias por calificarnos! Tu opinión nos ayuda a mejorar.</div>
+        <div id="calif-error" class="calif-error hidden">⚠️ Ocurrió un error, intenta de nuevo.</div>
+      </div>
+    </div>
+
+    <!-- Mostrar calificaciones existentes -->
+    <div class="calificaciones-lista" id="calificaciones-lista">
+      <h3>📊 Calificaciones de clientes</h3>
+      <div id="promedio-calificaciones" class="promedio-card"></div>
+      <div id="lista-calificaciones" class="lista-comentarios"></div>
+    </div>
+  </div>
+</section>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="footer-inner">
