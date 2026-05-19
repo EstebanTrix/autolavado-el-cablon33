@@ -65,6 +65,9 @@ let serviciosSeleccionados = [];
 let totalCalculado = 0;
 let datosUltimaOrden = null;
 
+// URL DEL BACKEND (Render)
+const BACKEND_URL = "https://backend-cablon33.onrender.com";
+
 // ========== SISTEMA DE CALIFICACIÓN PARA CLIENTES ==========
 let calificaciones = [];
 let ordenVerificada = null;
@@ -295,29 +298,25 @@ function validarFechaHora(fechaStr) {
   }
   
   const fecha = new Date(fechaStr);
-  const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+  const diaSemana = fecha.getDay();
   const hora = fecha.getHours();
   const minutos = fecha.getMinutes();
   
-  // Verificar día: Domingo no está permitido
   if (diaSemana === 0) {
     alert('❌ Los domingos no atendemos. Horario disponible: Lunes a Sábado de 9:00 AM a 5:00 PM.');
     return false;
   }
   
-  // Verificar hora: antes de las 9 AM
   if (hora < 9) {
     alert('❌ Nuestro horario de atención empieza a las 9:00 AM. Por favor selecciona una hora entre 9:00 AM y 5:00 PM.');
     return false;
   }
   
-  // Verificar hora: después de las 5 PM (17:00)
   if (hora >= 17) {
     alert('❌ Nuestro horario de atención termina a las 5:00 PM. Por favor selecciona una hora entre 9:00 AM y 5:00 PM.');
     return false;
   }
   
-  // Verificar hora exacta: si son las 5 PM exactas (17:00) no se permite
   if (hora === 17 && minutos > 0) {
     alert('❌ La última cita es a las 5:00 PM. Por favor selecciona una hora antes de las 5:00 PM.');
     return false;
@@ -441,7 +440,6 @@ function submitForm() {
   if (!marca)    { document.getElementById('err-marca').classList.remove('hidden'); valid = false; }
   if (!modelo)   { document.getElementById('err-modelo').classList.remove('hidden'); valid = false; }
   
-  // VALIDACIÓN OBLIGATORIA DE FECHA Y HORA
   if (!validarFechaHora(fecha)) {
     valid = false;
   }
@@ -462,7 +460,7 @@ function submitForm() {
   const idLocal = generarIdLocal();
   document.getElementById('hdnIdOrden').value = idLocal;
   
-  // Guardar orden
+  // Guardar orden en localStorage
   const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
   ordenesGuardadas.push({
     id: idLocal,
@@ -471,6 +469,32 @@ function submitForm() {
     calificado: false
   });
   localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
+
+  // ===========================
+  // ENVIAR ORDEN AL BACKEND (POSTGRESQL)
+  // ===========================
+  fetch(`${BACKEND_URL}/api/orden`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nombre: nombre,
+      telefono: telefono,
+      correo: correo,
+      marca: marca,
+      modelo: modelo,
+      categoria: isCamioneta ? "Camioneta Grande" : "Auto / SUV",
+      fecha_cita: fecha,
+      servicios: datosUltimaOrden.servicios,
+      total: totalCalculado
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Guardado en PostgreSQL:", data);
+  })
+  .catch(err => {
+    console.error("Error guardando en PostgreSQL:", err);
+  });
 
   // Mostrar éxito y luego generar ticket automático
   mostrarPaginaExito(nombre, idLocal, itemsContratados);
