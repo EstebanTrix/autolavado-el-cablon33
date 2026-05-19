@@ -308,13 +308,18 @@ function validarFechaHora(fechaStr) {
   
   // Verificar día: Domingo no está permitido (diaSemana === 0)
   if (diaSemana === 0) {
-    alert('❌ Los domingos no atendemos. Puedes agendar de lunes a sábado.');
+    alert('❌ Los domingos no atendemos. Horario: Lunes a Sábado de 9:00 AM a 5:00 PM.');
     return false;
   }
   
   // Verificar hora: debe estar entre 9 y 17 (9 AM a 5 PM)
-  if (hora < 9 || hora >= 17) {
-    alert('❌ Nuestro horario de atención es de 9:00 AM a 5:00 PM. Por favor selecciona otra hora.');
+  if (hora < 9) {
+    alert('❌ Nuestro horario de atención empieza a las 9:00 AM. Por favor selecciona una hora después de las 9:00 AM.');
+    return false;
+  }
+  
+  if (hora >= 17) {
+    alert('❌ Nuestro horario de atención termina a las 5:00 PM. Por favor selecciona una hora antes de las 5:00 PM.');
     return false;
   }
   
@@ -476,10 +481,10 @@ function descargarTicketPDF() {
           <tr style="background:#fb923c;">
             <th style="padding:12px;text-align:left;color:#121214;font-size:12px;font-weight:700;">Servicio</th>
             <th style="padding:12px;text-align:right;color:#121214;font-size:12px;font-weight:700;">Precio</th>
-          </tr>
+           </tr>
         </thead>
         <tbody>${lineasServicios}</tbody>
-      </table>
+       </table>
     </div>
 
     <div style="background:#1a1a1e;border:1px solid #2e2e35;border-radius:12px;padding:20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
