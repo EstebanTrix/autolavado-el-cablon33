@@ -70,7 +70,6 @@ let calificaciones = [];
 let ordenVerificada = null;
 let calificacionTemp = 0;
 
-// Cargar calificaciones guardadas al inicio
 function cargarCalificaciones() {
   const guardadas = localStorage.getItem('calificaciones_cablon33');
   if (guardadas) {
@@ -78,12 +77,10 @@ function cargarCalificaciones() {
   }
 }
 
-// Guardar calificaciones
 function guardarCalificaciones() {
   localStorage.setItem('calificaciones_cablon33', JSON.stringify(calificaciones));
 }
 
-// Verificar orden (solo clientes)
 function verificarOrden() {
   const ordenInput = document.getElementById('orden-verificar').value.trim();
   const errorDiv = document.getElementById('verificar-error');
@@ -94,10 +91,7 @@ function verificarOrden() {
     return;
   }
 
-  // Obtener órdenes guardadas del localStorage
   const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
-  
-  // Verificar si la orden existe y no ha sido calificada
   const orden = ordenesGuardadas.find(o => o.id === ordenInput);
   
   if (!orden) {
@@ -112,7 +106,6 @@ function verificarOrden() {
     return;
   }
 
-  // Orden válida
   errorDiv.classList.add('hidden');
   ordenVerificada = ordenInput;
   document.getElementById('verificar-orden').style.display = 'none';
@@ -147,7 +140,6 @@ function enviarCalificacion() {
   
   const comentario = document.getElementById('comentario-calificacion').value.trim();
   
-  // Guardar calificación
   const nuevaCalificacion = {
     id: Date.now(),
     ordenId: ordenVerificada,
@@ -159,7 +151,6 @@ function enviarCalificacion() {
   calificaciones.push(nuevaCalificacion);
   guardarCalificaciones();
   
-  // Marcar orden como calificada
   const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
   const ordenIndex = ordenesGuardadas.findIndex(o => o.id === ordenVerificada);
   if (ordenIndex !== -1) {
@@ -167,11 +158,9 @@ function enviarCalificacion() {
     localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
   }
   
-  // Mostrar éxito y resetear
   document.getElementById('calif-exito').classList.remove('hidden');
   document.getElementById('calif-error').classList.add('hidden');
   
-  // Resetear formulario
   setTimeout(() => {
     document.getElementById('verificar-orden').style.display = 'block';
     document.getElementById('form-calificar').classList.add('hidden');
@@ -298,35 +287,140 @@ function goToForm() {
   goTo('form');
 }
 
-// ---- Validar fecha y hora para agendar cita ----
+// ---- VALIDACIÓN DE FECHA Y HORA (CORREGIDA) ----
 function validarFechaHora(fechaStr) {
-  if (!fechaStr) return true; // Si no seleccionó fecha, no validar (es opcional)
+  if (!fechaStr) {
+    alert('❌ Por favor selecciona una fecha y hora para tu cita.');
+    return false;
+  }
   
   const fecha = new Date(fechaStr);
   const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
   const hora = fecha.getHours();
+  const minutos = fecha.getMinutes();
   
-  // Verificar día: Domingo no está permitido (diaSemana === 0)
+  // Verificar día: Domingo no está permitido
   if (diaSemana === 0) {
-    alert('❌ Los domingos no atendemos. Horario: Lunes a Sábado de 9:00 AM a 5:00 PM.');
+    alert('❌ Los domingos no atendemos. Horario disponible: Lunes a Sábado de 9:00 AM a 5:00 PM.');
     return false;
   }
   
-  // Verificar hora: debe estar entre 9 y 17 (9 AM a 5 PM)
+  // Verificar hora: antes de las 9 AM
   if (hora < 9) {
-    alert('❌ Nuestro horario de atención empieza a las 9:00 AM. Por favor selecciona una hora después de las 9:00 AM.');
+    alert('❌ Nuestro horario de atención empieza a las 9:00 AM. Por favor selecciona una hora entre 9:00 AM y 5:00 PM.');
     return false;
   }
   
+  // Verificar hora: después de las 5 PM (17:00)
   if (hora >= 17) {
-    alert('❌ Nuestro horario de atención termina a las 5:00 PM. Por favor selecciona una hora antes de las 5:00 PM.');
+    alert('❌ Nuestro horario de atención termina a las 5:00 PM. Por favor selecciona una hora entre 9:00 AM y 5:00 PM.');
+    return false;
+  }
+  
+  // Verificar hora exacta: si son las 5 PM exactas (17:00) no se permite
+  if (hora === 17 && minutos > 0) {
+    alert('❌ La última cita es a las 5:00 PM. Por favor selecciona una hora antes de las 5:00 PM.');
     return false;
   }
   
   return true;
 }
 
-// ---- Submit del formulario (VERSIÓN SIN API) ----
+// ---- GENERAR TICKET AUTOMÁTICAMENTE ----
+function generarTicketPDF() {
+  if (!datosUltimaOrden) return;
+  
+  const numOrden = document.getElementById('hdnIdOrden').value || generarIdLocal();
+  
+  let lineasServicios = '';
+  datosUltimaOrden.servicios.forEach(s => {
+    lineasServicios += `
+      <tr>
+        <td style="padding:10px 12px;border-bottom:1px solid #33333a;text-align:left;font-size:13px;">${s.nombre}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #33333a;text-align:right;font-weight:600;font-size:13px;">$${s.precio.toFixed(2)} MXN</td>
+      </tr>`;
+  });
+
+  const fechaImpresion = new Date().toLocaleString('es-MX');
+  const fechaCita = datosUltimaOrden.fecha ? formatearFecha(datosUltimaOrden.fecha) : 'Por confirmar';
+
+  const el = document.createElement('div');
+  el.style.cssText = 'width:210mm;min-height:297mm;padding:15mm;background:#121214;color:#e2e8f0;font-family:"Poppins",Arial,sans-serif;box-sizing:border-box;';
+  
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:32px;font-weight:900;color:#fb923c;">EL CABLON 33</div>
+      <div style="font-size:12px;letter-spacing:2px;color:#fb923c;">AUTOLAVADO & DETALLADO AUTOMOTRIZ</div>
+      <div style="font-size:10px;color:#888;margin-top:8px;">Av. Patria 1234, Col. Providencia, Guadalajara, Jal.</div>
+      <div style="font-size:10px;color:#888;">Tel. 33 1234 5678 · detallado33@mail.com</div>
+    </div>
+    
+    <div style="border-top:2px dashed #fb923c;margin:10px 0;"></div>
+    
+    <div style="display:flex;justify-content:space-between;margin:15px 0;">
+      <div>
+        <div style="font-size:11px;color:#888;">FOLIO DE ORDEN</div>
+        <div style="font-size:24px;font-weight:900;color:#fb923c;">${numOrden}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11px;color:#888;">FECHA DE EMISIÓN</div>
+        <div style="font-size:14px;font-weight:600;">${fechaImpresion}</div>
+      </div>
+    </div>
+    
+    <div style="background:#1a1a1e;padding:15px;border-radius:12px;margin:15px 0;">
+      <div style="font-size:12px;font-weight:700;color:#fb923c;margin-bottom:10px;">📋 DATOS DEL CLIENTE</div>
+      <div><strong>Nombre:</strong> ${datosUltimaOrden.nombre}</div>
+      <div><strong>Teléfono:</strong> ${datosUltimaOrden.telefono}</div>
+      <div><strong>Correo:</strong> ${datosUltimaOrden.correo}</div>
+    </div>
+    
+    <div style="background:#1a1a1e;padding:15px;border-radius:12px;margin:15px 0;">
+      <div style="font-size:12px;font-weight:700;color:#fb923c;margin-bottom:10px;">🚗 DATOS DEL VEHÍCULO</div>
+      <div><strong>Marca:</strong> ${datosUltimaOrden.marca}</div>
+      <div><strong>Modelo/Año:</strong> ${datosUltimaOrden.modelo}</div>
+      <div><strong>Categoría:</strong> ${datosUltimaOrden.tipoVehiculo}</div>
+      ${datosUltimaOrden.placa ? `<div><strong>Placa:</strong> ${datosUltimaOrden.placa}</div>` : ''}
+      <div><strong>Fecha de cita:</strong> ${fechaCita}</div>
+    </div>
+    
+    <div style="background:#1a1a1e;padding:15px;border-radius:12px;margin:15px 0;">
+      <div style="font-size:12px;font-weight:700;color:#fb923c;margin-bottom:10px;">🛠️ SERVICIOS CONTRATADOS</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#fb923c20;">
+            <th style="padding:8px;text-align:left;color:#fb923c;">Servicio</th>
+            <th style="padding:8px;text-align:right;color:#fb923c;">Precio</th>
+           </tr>
+        </thead>
+        <tbody>${lineasServicios}</tbody>
+       </table>
+    </div>
+    
+    <div style="background:#fb923c20;padding:15px;border-radius:12px;margin:15px 0;text-align:right;">
+      <div style="font-size:18px;font-weight:900;color:#fb923c;">TOTAL: $${datosUltimaOrden.total.toFixed(2)} MXN</div>
+    </div>
+    
+    <div style="border-top:2px dashed #fb923c;margin:15px 0;"></div>
+    
+    <div style="text-align:center;margin-top:15px;">
+      <div style="font-size:10px;color:#888;">Este comprobante no es una factura fiscal</div>
+      <div style="font-size:10px;color:#888;">¡Gracias por confiar en El Cablon 33!</div>
+    </div>
+  `;
+
+  const opt = {
+    margin: [0.3, 0.3, 0.3, 0.3],
+    filename: `Ticket_ElCablon33_${numOrden}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, backgroundColor: '#121214', useCORS: true, logging: false },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(el).save();
+}
+
+// ---- SUBMIT DEL FORMULARIO ----
 function submitForm() {
   document.querySelectorAll('.form-error').forEach(e => e.classList.add('hidden'));
   const se = document.getElementById('server-error');
@@ -341,14 +435,14 @@ function submitForm() {
   const fecha    = document.getElementById('f-fecha').value;
 
   let valid = true;
-  if (!nombre)              { document.getElementById('err-nombre').classList.remove('hidden');   valid = false; }
-  if (telefono.length !== 10){ document.getElementById('err-telefono').classList.remove('hidden'); valid = false; }
-  if (!correo.includes('@')) { document.getElementById('err-email').classList.remove('hidden');   valid = false; }
-  if (!marca)               { document.getElementById('err-marca').classList.remove('hidden');    valid = false; }
-  if (!modelo)              { document.getElementById('err-modelo').classList.remove('hidden');   valid = false; }
+  if (!nombre)   { document.getElementById('err-nombre').classList.remove('hidden'); valid = false; }
+  if (telefono.length !== 10) { document.getElementById('err-telefono').classList.remove('hidden'); valid = false; }
+  if (!correo.includes('@')) { document.getElementById('err-email').classList.remove('hidden'); valid = false; }
+  if (!marca)    { document.getElementById('err-marca').classList.remove('hidden'); valid = false; }
+  if (!modelo)   { document.getElementById('err-modelo').classList.remove('hidden'); valid = false; }
   
-  // Validar fecha y hora si el cliente seleccionó una
-  if (fecha && !validarFechaHora(fecha)) {
+  // VALIDACIÓN OBLIGATORIA DE FECHA Y HORA
+  if (!validarFechaHora(fecha)) {
     valid = false;
   }
   
@@ -367,47 +461,60 @@ function submitForm() {
 
   const idLocal = generarIdLocal();
   document.getElementById('hdnIdOrden').value = idLocal;
-  mostrarPaginaExito(nombre, idLocal, itemsContratados);
-}
-
-function generarIdLocal() {
-  return 'L-' + Date.now().toString().slice(-6);
-}
-
-function mostrarPaginaExito(nombre, idOrden, itemsContratados) {
-  // Guardar orden en localStorage para verificación de calificación
+  
+  // Guardar orden
   const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
   ordenesGuardadas.push({
-    id: idOrden,
+    id: idLocal,
     nombre: nombre,
     fecha: new Date().toISOString(),
     calificado: false
   });
   localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
 
+  // Mostrar éxito y luego generar ticket automático
+  mostrarPaginaExito(nombre, idLocal, itemsContratados);
+  
+  // Generar ticket PDF automáticamente después de 1 segundo
+  setTimeout(() => {
+    generarTicketPDF();
+  }, 1000);
+}
+
+function generarIdLocal() {
+  return 'ORD-' + Date.now().toString().slice(-8);
+}
+
+function mostrarPaginaExito(nombre, idOrden, itemsContratados) {
   document.getElementById('success-nombre').innerText = nombre;
   document.getElementById('ticket-id-orden').innerText = idOrden;
 
   const meta = document.getElementById('ticket-meta');
-  meta.innerHTML = `
-    <div class="ticket-meta-item"><label>Cliente</label><span>${escapeHtml(nombre)}</span></div>
-    <div class="ticket-meta-item"><label>Teléfono</label><span>${datosUltimaOrden.telefono}</span></div>
-    <div class="ticket-meta-item"><label>Vehículo</label><span>${escapeHtml(datosUltimaOrden.marca)} ${escapeHtml(datosUltimaOrden.modelo)}</span></div>
-    <div class="ticket-meta-item"><label>Categoría</label><span>${datosUltimaOrden.tipoVehiculo}</span></div>
-    ${datosUltimaOrden.fecha ? `<div class="ticket-meta-item"><label>Fecha preferida</label><span>${formatearFecha(datosUltimaOrden.fecha)}</span></div>` : ''}
-    ${datosUltimaOrden.placa ? `<div class="ticket-meta-item"><label>Placa</label><span>${escapeHtml(datosUltimaOrden.placa)}</span></div>` : ''}
-  `;
+  if (meta) {
+    meta.innerHTML = `
+      <div class="ticket-meta-item"><label>Cliente</label><span>${escapeHtml(nombre)}</span></div>
+      <div class="ticket-meta-item"><label>Teléfono</label><span>${datosUltimaOrden.telefono}</span></div>
+      <div class="ticket-meta-item"><label>Vehículo</label><span>${escapeHtml(datosUltimaOrden.marca)} ${escapeHtml(datosUltimaOrden.modelo)}</span></div>
+      <div class="ticket-meta-item"><label>Categoría</label><span>${datosUltimaOrden.tipoVehiculo}</span></div>
+      ${datosUltimaOrden.fecha ? `<div class="ticket-meta-item"><label>Fecha cita</label><span>${formatearFecha(datosUltimaOrden.fecha)}</span></div>` : ''}
+      ${datosUltimaOrden.placa ? `<div class="ticket-meta-item"><label>Placa</label><span>${escapeHtml(datosUltimaOrden.placa)}</span></div>` : ''}
+    `;
+  }
 
   const servsEl = document.getElementById('ticket-servicios');
-  servsEl.innerHTML = '';
-  datosUltimaOrden.servicios.forEach(s => {
-    const row = document.createElement('div');
-    row.className = 'ticket-row';
-    row.innerHTML = `<span>${escapeHtml(s.nombre)}</span><strong>$${s.precio.toFixed(2)} MXN</strong>`;
-    servsEl.appendChild(row);
-  });
+  if (servsEl) {
+    servsEl.innerHTML = '';
+    datosUltimaOrden.servicios.forEach(s => {
+      const row = document.createElement('div');
+      row.className = 'ticket-row';
+      row.innerHTML = `<span>${escapeHtml(s.nombre)}</span><strong>$${s.precio.toFixed(2)} MXN</strong>`;
+      servsEl.appendChild(row);
+    });
+  }
 
-  document.getElementById('ticket-total').innerText = `$${totalCalculado.toFixed(2)} MXN`;
+  const totalEl = document.getElementById('ticket-total');
+  if (totalEl) totalEl.innerText = `$${totalCalculado.toFixed(2)} MXN`;
+  
   goTo('success');
 }
 
@@ -423,102 +530,7 @@ function formatearFecha(fechaStr) {
   } catch { return fechaStr; }
 }
 
-// ---- Generación del PDF ----
+// Función manual para descargar ticket (por si el cliente quiere otra copia)
 function descargarTicketPDF() {
-  if (!datosUltimaOrden) return;
-  const numOrden = document.getElementById('hdnIdOrden').value || '—';
-
-  let lineasServicios = '';
-  datosUltimaOrden.servicios.forEach(s => {
-    lineasServicios += `
-      <tr>
-        <td style="padding:12px;border-bottom:1px solid #33333a;text-align:left;font-size:13px;">${s.nombre}</td>
-        <td style="padding:12px;border-bottom:1px solid #33333a;text-align:right;font-weight:600;font-size:13px;">$${s.precio.toFixed(2)} MXN</td>
-      </tr>`;
-  });
-
-  const fechaImpresion = new Date().toLocaleString('es-MX', { dateStyle:'medium', timeStyle:'short' });
-  const fechaCita = datosUltimaOrden.fecha ? formatearFecha(datosUltimaOrden.fecha) : 'Por confirmar';
-
-  const el = document.createElement('div');
-  el.style.cssText = 'width:210mm;min-height:297mm;padding:15mm;background:#121214;color:#e2e8f0;font-family:"Poppins",Arial,sans-serif;box-sizing:border-box;';
-  
-  el.innerHTML = `
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #fb923c;padding-bottom:18px;margin-bottom:24px;">
-      <div>
-        <div style="font-size:28px;font-weight:900;letter-spacing:3px;color:#ffffff;text-transform:uppercase;">EL CABLON 33</div>
-        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#fb923c;margin-top:4px;">Autolavado &amp; Detallado Automotriz</div>
-        <div style="font-size:11px;color:#888;margin-top:8px;">Av. Patria 1234, Col. Providencia, Guadalajara, Jal.</div>
-        <div style="font-size:11px;color:#888;">Tel. 33 1234 5678 · detallado33@mail.com</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:1px;">Comprobante de Orden</div>
-        <div style="font-size:22px;font-weight:900;color:#fb923c;">#${numOrden}</div>
-        <div style="font-size:10px;color:#888;margin-top:4px;">Emitido: ${fechaImpresion}</div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:20px;margin-bottom:24px;flex-wrap:wrap;">
-      <div style="flex:1;background:#1a1a1e;padding:16px;border-radius:12px;border:1px solid #2e2e35;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#fb923c;margin-bottom:12px;font-weight:700;">📋 Datos del Cliente</div>
-        <div style="font-size:12px;margin-bottom:8px;"><strong>Nombre:</strong> ${datosUltimaOrden.nombre}</div>
-        <div style="font-size:12px;margin-bottom:8px;"><strong>Teléfono:</strong> ${datosUltimaOrden.telefono}</div>
-        <div style="font-size:12px;"><strong>Correo:</strong> ${datosUltimaOrden.correo}</div>
-      </div>
-      <div style="flex:1;background:#1a1a1e;padding:16px;border-radius:12px;border:1px solid #2e2e35;">
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#fb923c;margin-bottom:12px;font-weight:700;">🚗 Vehículo</div>
-        <div style="font-size:12px;margin-bottom:8px;"><strong>Unidad:</strong> ${datosUltimaOrden.marca} ${datosUltimaOrden.modelo}</div>
-        <div style="font-size:12px;margin-bottom:8px;"><strong>Categoría:</strong> ${datosUltimaOrden.tipoVehiculo}</div>
-        ${datosUltimaOrden.placa ? `<div style="font-size:12px;margin-bottom:8px;"><strong>Placa:</strong> ${datosUltimaOrden.placa}</div>` : ''}
-        <div style="font-size:12px;"><strong>Cita:</strong> ${fechaCita}</div>
-      </div>
-    </div>
-
-    <div style="margin-bottom:20px;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#fb923c;margin-bottom:12px;font-weight:700;">🛠️ Servicios Contratados</div>
-      <table style="width:100%;border-collapse:collapse;background:#1a1a1e;border-radius:12px;overflow:hidden;">
-        <thead>
-          <tr style="background:#fb923c;">
-            <th style="padding:12px;text-align:left;color:#121214;font-size:12px;font-weight:700;">Servicio</th>
-            <th style="padding:12px;text-align:right;color:#121214;font-size:12px;font-weight:700;">Precio</th>
-           </tr>
-        </thead>
-        <tbody>${lineasServicios}</tbody>
-       </table>
-    </div>
-
-    <div style="background:#1a1a1e;border:1px solid #2e2e35;border-radius:12px;padding:20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
-      <div>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#888;font-weight:700;">Total Estimado de la Orden</div>
-        <div style="font-size:10px;color:#555;margin-top:4px;">*Precios sujetos a revisión en sucursal</div>
-      </div>
-      <div style="font-size:32px;font-weight:900;color:#fb923c;">$${datosUltimaOrden.total.toFixed(2)} MXN</div>
-    </div>
-
-    <div style="border-top:1px solid #2e2e35;padding-top:20px;text-align:center;">
-      <div style="font-size:10px;color:#888;line-height:1.6;">Este comprobante no es una factura fiscal. Los precios son estimados y pueden variar según las condiciones del vehículo.</div>
-      <div style="font-size:10px;color:#888;margin-top:6px;">📍 Lunes a Viernes 9:00–19:00 · Sábado 9:00–15:00</div>
-      <div style="font-size:13px;font-weight:700;color:#fb923c;margin-top:16px;">✨ ¡Gracias por confiar en El Cablon 33! ✨</div>
-    </div>
-  `;
-
-  const opt = {
-    margin: [0.3, 0.3, 0.3, 0.3],
-    filename: `Ticket_ElCablon33_Orden_${numOrden}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { 
-      scale: 2, 
-      backgroundColor: '#121214', 
-      useCORS: true,
-      logging: false,
-      windowWidth: el.scrollWidth
-    },
-    jsPDF: { 
-      unit: 'in', 
-      format: 'letter',
-      orientation: 'portrait' 
-    }
-  };
-
-  html2pdf().set(opt).from(el).save();
+  generarTicketPDF();
 }
