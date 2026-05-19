@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>El Cablon 33 — Autolavado & Detallado Automotriz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="noise">
+
+<!-- Burbujas de fondo -->
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+</div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="logo" onclick="goTo('home')">
+      <div class="logo-icon">🚗</div>
+      <div class="logo-text">
+        <div class="logo-main">EL CABLON 33</div>
+        <div class="logo-sub">Autolavado &amp; Detallado</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="scrollToSection('hero')">🚗 Paquetes</button>
+      <button class="nav-link" onclick="scrollToSection('nosotros')">👥 Nosotros</button>
+      <button class="nav-link" onclick="scrollToSection('contacto')">📍 Contacto</button>
+      <button class="theme-btn" onclick="toggleTheme()" title="Cambiar tema">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<!-- =========== PÁGINA HOME =========== -->
+<div class="page active" id="page-home">
+
+  <!-- Hero -->
+  <section id="hero" class="hero">
+    <div class="hero-badge anim-fade">🚗 Guadalajara, Jalisco · Desde 2015</div>
+    <h1 class="hero-h1 anim-up d1">AUTOLAVADO &amp;<br><span class="shimmer-text">DETALLADO</span></h1>
+    <p class="hero-sub anim-up d2">Dejamos tu vehículo <strong>impecable</strong>. Selecciona uno o varios servicios y agenda tu cita.</p>
+    <div class="anim-up d3">
+      <div class="toggle-group">
+        <button class="toggle-btn active" id="btn-auto" onclick="setVehicle(false)">🚗 Auto / SUV</button>
+        <button class="toggle-btn" id="btn-camioneta" onclick="setVehicle(true)">🚛 Camioneta Grande o Carga</button>
+      </div>
+    </div>
+    <div class="anim-up d4">
+      <div class="tab-group">
+        <button class="tab-btn active" id="tab-lavado" onclick="setTab('lavado')">💧 Lavado</button>
+        <button class="tab-btn" id="tab-detallado" onclick="setTab('detallado')">✨ Detallado</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="cards-grid" id="cards-container">
+    <div class="grid-3" id="cards-grid"></div>
+  </div>
+
+  <!-- Barra flotante -->
+  <div class="cta-bar" id="cta-bar">
+    <div class="cta-info">
+      <div class="cta-label">Tu selección</div>
+      <div class="cta-name" id="cta-name">—</div>
+      <div class="cta-price" id="cta-price">—</div>
+    </div>
+    <button class="cta-btn" onclick="goToForm()">Continuar →</button>
+  </div>
+
+  <!-- Nosotros -->
+  <section id="nosotros" class="section-nosotros">
+    <div class="container">
+      <h2 class="section-title">✨ Sobre Nosotros</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>En <strong>El Cablon 33</strong> llevamos más de 10 años cuidando los autos de Guadalajara con pasión y profesionalismo. Somos un equipo especializado en autolavado y detailing de alta calidad.</p>
+          <p>Nuestro compromiso es devolverle a tu vehículo ese brillo y frescura que merece, utilizando productos de primeras marcas y técnicas de vanguardia.</p>
+          <div class="values-list">
+            <div><span>🔧</span> Experiencia y confianza</div>
+            <div><span>💧</span> Productos ecológicos</div>
+            <div><span>✨</span> Atención personalizada</div>
+          </div>
+        </div>
+        <div class="about-image">
+          <div class="about-img-grid">
+            <img src="https://lavarcoche.com/wp-content/uploads/2025/12/como-pulir-coche.webp" alt="Pulido Profesional">
+            <img src="https://www.multiserlim.com/wp-content/gallery/antes-y-despues-de-limpieza-de-asientos-de-carro/Antes-Despues-11.webp" alt="Vestiduras">
+            <img src="https://www.tuautocomonuevo.mx/wp-content/uploads/2020/02/motor1.jpg" alt="Lavado de Motor">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="section-contacto">
+    <div class="container">
+      <h2 class="section-title">📍 Contáctanos</h2>
+      <div class="contact-grid">
+        <div class="contact-info">
+          <div class="contact-item"><i>📍</i><span>Av. Patria 1234, Col. Providencia<br>Guadalajara, Jalisco, México</span></div>
+          <div class="contact-item"><i>📞</i><span>33 1234 5678</span></div>
+          <div class="contact-item"><i>✉️</i><span>detallado33@mail.com</span></div>
+          <div class="contact-item"><i>⏰</i><span>Lun - Vie: 9:00 - 19:00 / Sáb: 9:00 - 15:00</span></div>
+        </div>
+        <div class="contact-mapa">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3733.467207358625!2d-103.3814249!3d20.6599762!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8428b2b6a9f8b9f9%3A0x4f7c1e5c2b1c6b8!2sAv.%20Patria%2C%20Guadalajara%2C%20Jal.!5e0!3m2!1ses!2smx!4v1700000000000!5m2!1ses!2smx" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <h3>⭐ Reseñas destacadas</h3>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Excelente servicio, dejaron mi camioneta como nueva. Muy profesionales."</p>
+          <div class="cliente">— Laura M.</div>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"El lavado express es súper rápido y económico. Volveré por el buen servicio."</p>
+          <div class="cliente">— Javier R.</div>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★☆</div>
+          <p>"Detallado impecable, mi auto parece nuevo. Recomendado 100%."</p>
+          <div class="cliente">— Karla G.</div>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">© 2025 El Cablon 33 - Autolavado y Detallado Automotriz. Todos los derechos reservados.</div>
+  </footer>
+</div>
+
+<!-- =========== PÁGINA FORMULARIO =========== -->
+<div class="page" id="page-form">
+  <div class="form-page">
+    <button class="back-btn anim-fade" onclick="goTo('home')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Volver a servicios
+    </button>
+    <div class="pkg-summary anim-up" id="form-pkg-summary">
+      <div class="pkg-summary-inner" id="form-summary-inner"></div>
+    </div>
+    <div class="form-card anim-up d2">
+      <div class="form-title">TUS DATOS</div>
+      <div class="form-sub">Completa tu información para confirmar la orden</div>
+      <div id="server-error" class="server-error hidden">⚠️ <span id="server-error-msg"></span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fb923c" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Nombre completo *
+          </label>
+          <input class="form-input" id="f-nombre" maxlength="50" oninput="this.value=this.value.replace(/[0-9]/g,'')" />
+          <div class="form-error hidden" id="err-nombre">⚠ El nombre es requerido y no debe contener números</div>
+        </div>
+      </div>
+      <div class="form-row two">
+        <div class="form-group">
+          <label class="form-label">📞 Teléfono *</label>
+          <input class="form-input" id="f-telefono" type="tel" maxlength="10" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+          <div class="form-error hidden" id="err-telefono">⚠ Deben ser exactamente 10 dígitos numéricos</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">✉️ Correo *</label>
+          <input class="form-input" id="f-email" />
+          <div class="form-error hidden" id="err-email">⚠ Correo inválido</div>
+        </div>
+      </div>
+      <div class="form-row two">
+        <div class="form-group">
+          <label class="form-label">🚘 Marca *</label>
+          <input class="form-input" id="f-marca" />
+          <div class="form-error hidden" id="err-marca">⚠ Requerido</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">📅 Modelo/Año *</label>
+          <input class="form-input" id="f-modelo" />
+          <div class="form-error hidden" id="err-modelo">⚠ Requerido</div>
+        </div>
+      </div>
+      <div class="form-row two">
+        <div class="form-group">
+          <label class="form-label">🔖 Placa (opcional)</label>
+          <input class="form-input" id="f-placa" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">📆 Fecha y hora preferida</label>
+          <input class="form-input" id="f-fecha" type="datetime-local" />
+        </div>
+      </div>
+      <button class="form-submit" id="submit-btn" onclick="submitForm()">✓ Confirmar orden</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========== PÁGINA ÉXITO + TICKET =========== -->
+<div class="page" id="page-success">
+  <div class="success-wrap">
+    <div class="success-inner">
+      <div class="success-icon-wrap anim-scale">
+        <div class="success-ping"></div>
+        <div class="success-ping2"></div>
+        <div class="success-circle">✅</div>
+      </div>
+      <h1 class="success-h1 anim-up">¡LISTO!</h1>
+      <p class="success-sub anim-up d1">Gracias, <strong id="success-nombre">Cliente</strong>. Tu orden fue recibida.</p>
+
+      <!-- TICKET DE ORDEN -->
+      <div class="ticket-card anim-up d2" id="ticket-preview">
+        <div class="ticket-header">
+          <div>
+            <div class="ticket-brand">EL CABLON 33</div>
+            <div class="ticket-subtitle">Autolavado &amp; Detallado Automotriz</div>
+          </div>
+          <div class="ticket-orden">Orden #<span id="ticket-id-orden">—</span></div>
+        </div>
+        <div class="ticket-section">
+          <div class="ticket-section-title">Cliente &amp; Vehículo</div>
+          <div class="ticket-meta" id="ticket-meta"></div>
+        </div>
+        <div class="ticket-section">
+          <div class="ticket-section-title">Servicios contratados</div>
+          <div id="ticket-servicios"></div>
+        </div>
+        <div class="ticket-total-row">
+          <div class="ticket-total-label">Total estimado</div>
+          <div class="ticket-total-amount" id="ticket-total">—</div>
+        </div>
+        <button class="ticket-download-btn" onclick="descargarTicketPDF()">
+          ⬇️ Descargar ticket en PDF
+        </button>
+      </div>
+
+      <p class="success-note anim-up d3">Nos pondremos en contacto contigo para confirmar tu cita.</p>
+      <div class="success-btns anim-up d4">
+        <button class="btn-primary" onclick="goTo('home')">🏠 Volver al inicio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Input oculto para ID de orden -->
+<input type="hidden" id="hdnIdOrden" value="" />
+
+<script src="script.js"></script>
+</body>
+</html>

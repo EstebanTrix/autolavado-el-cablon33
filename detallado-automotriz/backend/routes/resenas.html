@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>El Cablon 33 — Déjanos tu opinión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:     #0f0f12;
+  --bg2:    #1a1a1e;
+  --bg3:    #232328;
+  --card:   #18181c;
+  --border: rgba(255,255,255,0.07);
+  --text:   #e2e8f0;
+  --muted:  #888;
+  --accent: #fb923c;
+  --green:  #22c55e;
+  --red:    #f87171;
+  --radius: 16px;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'Poppins',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; }
+
+/* Orbs decorativos */
+.orb { position:fixed; border-radius:50%; filter:blur(80px); pointer-events:none; z-index:0; }
+.orb1 { width:400px; height:400px; background:rgba(251,146,60,0.06); top:-150px; right:-100px; }
+.orb2 { width:350px; height:350px; background:rgba(249,115,22,0.04); bottom:10%; left:-100px; }
+
+.wrap { position:relative; z-index:1; width:100%; max-width:520px; }
+
+/* Logo */
+.logo-bar { display:flex; align-items:center; gap:12px; margin-bottom:32px; justify-content:center; }
+.logo-icon { width:44px; height:44px; background:linear-gradient(135deg,#fb923c,#f97316); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
+.logo-main { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:.1em; }
+.logo-sub  { font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
+
+/* Pasos */
+.step { display:none; }
+.step.active { display:block; }
+
+/* Panel de verificación */
+.panel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:36px; }
+.panel-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:.05em; margin-bottom:6px; }
+.panel-sub   { font-size:.82rem; color:var(--muted); margin-bottom:28px; line-height:1.6; }
+
+/* Info de la orden verificada */
+.orden-info { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:16px 20px; margin-bottom:24px; }
+.orden-info-row { display:flex; justify-content:space-between; font-size:.82rem; padding:5px 0; border-bottom:1px dashed var(--border); }
+.orden-info-row:last-child { border-bottom:none; }
+.orden-info-row span:first-child { color:var(--muted); }
+.orden-info-row span:last-child  { font-weight:600; }
+
+/* Input numérico de orden */
+.input-orden { width:100%; background:var(--bg3); border:2px solid var(--border); border-radius:10px; padding:14px 16px; color:var(--text); font-family:'Poppins',sans-serif; font-size:1.1rem; text-align:center; letter-spacing:.1em; transition:.2s; margin-bottom:8px; }
+.input-orden:focus { outline:none; border-color:rgba(251,146,60,0.5); }
+.input-orden::placeholder { font-size:.85rem; letter-spacing:0; color:var(--muted); }
+
+.msg-error { font-size:.78rem; color:var(--red); background:rgba(248,113,113,0.08); border-radius:6px; padding:8px 12px; margin-bottom:16px; display:none; }
+.msg-aviso { font-size:.78rem; color:#facc15; background:rgba(250,204,21,0.08); border-radius:6px; padding:8px 12px; margin-bottom:16px; display:none; }
+
+.btn-principal { width:100%; background:linear-gradient(135deg,#fb923c,#f97316); color:#fff; border:none; padding:14px; border-radius:12px; font-family:'Poppins',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; transition:.2s; margin-top:8px; }
+.btn-principal:hover { opacity:.9; }
+.btn-principal:disabled { opacity:.5; cursor:not-allowed; }
+
+/* Estrellas */
+.star-row { display:flex; gap:10px; justify-content:center; margin:20px 0; }
+.star-btn  { background:none; border:none; font-size:2.8rem; cursor:pointer; color:#2e2e35; transition:.15s; line-height:1; }
+.star-btn.active, .star-btn:hover { color:#fbbf24; }
+.star-label { text-align:center; font-size:.8rem; color:var(--muted); min-height:20px; margin-bottom:8px; }
+
+/* Textarea */
+.opinion-textarea { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px; color:var(--text); font-family:'Poppins',sans-serif; font-size:.875rem; resize:vertical; min-height:110px; transition:.2s; }
+.opinion-textarea:focus { outline:none; border-color:rgba(251,146,60,0.4); }
+
+/* Éxito */
+.exito-wrap { text-align:center; }
+.exito-icon { font-size:4rem; margin-bottom:16px; }
+.exito-titulo { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:.1em; color:var(--green); margin-bottom:8px; }
+.exito-sub { font-size:.9rem; color:var(--muted); margin-bottom:24px; }
+.btn-volver { background:var(--bg3); color:var(--text); border:1px solid var(--border); padding:12px 28px; border-radius:12px; font-family:'Poppins',sans-serif; font-size:.9rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; transition:.2s; }
+.btn-volver:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Aviso de espera */
+.espera-wrap { text-align:center; }
+.espera-icon { font-size:3rem; margin-bottom:12px; }
+.espera-titulo { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; letter-spacing:.05em; color:var(--accent); margin-bottom:8px; }
+
+/* Spinner */
+.spinner { display:inline-block; width:20px; height:20px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:8px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.nota { font-size:.72rem; color:var(--muted); text-align:center; margin-top:16px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="wrap">
+
+  <!-- Logo -->
+  <div class="logo-bar">
+    <div class="logo-icon">🚗</div>
+    <div>
+      <div class="logo-main">EL CABLON 33</div>
+      <div class="logo-sub">Autolavado &amp; Detallado</div>
+    </div>
+  </div>
+
+  <!-- PASO 1: ingresar número de orden -->
+  <div class="step active" id="step-verificar">
+    <div class="panel">
+      <div class="panel-title">DÉJANOS TU OPINIÓN</div>
+      <div class="panel-sub">
+        Ingresa el número de orden que aparece en tu comprobante.<br>
+        Podrás dejar tu reseña <strong>24 horas después</strong> de que recibiste tu vehículo.
+      </div>
+      <input class="input-orden" id="input-id-orden" type="number" min="1" placeholder="Ej: 42" />
+      <div class="msg-error" id="msg-error"></div>
+      <div class="msg-aviso" id="msg-aviso"></div>
+      <button class="btn-principal" id="btn-verificar" onclick="verificarOrden()">Verificar orden →</button>
+      <p class="nota">Solo clientes con una orden registrada pueden dejar reseña.</p>
+    </div>
+  </div>
+
+  <!-- PASO 2: formulario de reseña -->
+  <div class="step" id="step-resena">
+    <div class="panel">
+      <div class="panel-title">TU EXPERIENCIA</div>
+      <div class="panel-sub">Gracias por visitarnos. Tu opinión nos ayuda a mejorar.</div>
+
+      <!-- Resumen de la orden -->
+      <div class="orden-info" id="orden-info-box"></div>
+
+      <!-- Estrellas -->
+      <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px;">Calificación *</div>
+      <div class="star-row" id="star-row-resena">
+        <button class="star-btn" data-val="1" onclick="setStar(1)">★</button>
+        <button class="star-btn" data-val="2" onclick="setStar(2)">★</button>
+        <button class="star-btn" data-val="3" onclick="setStar(3)">★</button>
+        <button class="star-btn" data-val="4" onclick="setStar(4)">★</button>
+        <button class="star-btn" data-val="5" onclick="setStar(5)">★</button>
+      </div>
+      <div class="star-label" id="star-label">Selecciona una calificación</div>
+
+      <!-- Comentario -->
+      <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;">Comentario *</div>
+      <textarea class="opinion-textarea" id="txt-comentario" placeholder="¿Cómo fue tu experiencia? Cuéntanos qué te pareció el servicio..."></textarea>
+
+      <div class="msg-error" id="msg-error-resena" style="margin-top:12px;"></div>
+      <button class="btn-principal" id="btn-enviar-resena" onclick="enviarResena()" style="margin-top:16px;">
+        Publicar mi reseña ✓
+      </button>
+    </div>
+  </div>
+
+  <!-- PASO 3: éxito -->
+  <div class="step" id="step-exito">
+    <div class="panel exito-wrap">
+      <div class="exito-icon">✅</div>
+      <div class="exito-titulo">¡GRACIAS!</div>
+      <p class="exito-sub">Tu reseña fue publicada exitosamente.<br>Tu opinión es muy importante para nosotros.</p>
+      <a href="index.html" class="btn-volver">🏠 Volver al inicio</a>
+    </div>
+  </div>
+
+  <!-- PASO: demasiado pronto -->
+  <div class="step" id="step-espera">
+    <div class="panel espera-wrap">
+      <div class="espera-icon">⏳</div>
+      <div class="espera-titulo">AÚN NO DISPONIBLE</div>
+      <p class="panel-sub" id="espera-msg"></p>
+      <a href="index.html" class="btn-volver">🏠 Volver al inicio</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_URL = 'http://localhost:3000/api';
+// Horas mínimas después de la orden para poder dejar reseña
+const HORAS_MINIMAS = 24;
+
+let idOrdenVerificada = null;
+let estrellaSeleccionada = 0;
+
+const etiquetasEstrellas = ['','Muy malo','Regular','Bueno','Muy bueno','¡Excelente!'];
+
+function mostrarStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function setStar(val) {
+  estrellaSeleccionada = val;
+  document.querySelectorAll('#star-row-resena .star-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.val) <= val);
+  });
+  document.getElementById('star-label').textContent = etiquetasEstrellas[val] || '';
+}
+
+function mostrarError(idEl, msg) {
+  const el = document.getElementById(idEl);
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+function ocultarError(idEl) {
+  const el = document.getElementById(idEl);
+  el.style.display = 'none';
+}
+
+// ── Verificar si la orden existe y si ya pasaron las horas mínimas ──
+function verificarOrden() {
+  ocultarError('msg-error');
+  ocultarError('msg-aviso');
+
+  const idRaw = document.getElementById('input-id-orden').value.trim();
+  const idOrden = parseInt(idRaw);
+  if (!idRaw || isNaN(idOrden) || idOrden < 1) {
+    mostrarError('msg-error', 'Ingresa un número de orden válido.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-verificar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Verificando...';
+
+  fetch(`${API_URL}/resenas/verificar/${idOrden}`)
+    .then(async res => {
+      const data = await res.json();
+      if (!res.ok) return Promise.reject(data);
+      return data;
+    })
+    .then(data => {
+      // data: { valida: true, cliente, marca, modelo, fecha_creacion, ya_reseno }
+      if (data.ya_reseno) {
+        mostrarError('msg-error', 'Esta orden ya tiene una reseña registrada. ¡Gracias!');
+        return;
+      }
+
+      // Verificar si ya pasaron las horas mínimas
+      const fechaOrden  = new Date(data.fecha_creacion);
+      const ahora       = new Date();
+      const horasTranscurridas = (ahora - fechaOrden) / 3600000;
+
+      if (horasTranscurridas < HORAS_MINIMAS) {
+        const horasRestantes = Math.ceil(HORAS_MINIMAS - horasTranscurridas);
+        document.getElementById('espera-msg').innerHTML =
+          `Podrás dejar tu reseña en aproximadamente <strong>${horasRestantes} hora(s)</strong>.<br>
+           Queremos asegurarnos de que ya recibiste tu vehículo antes de pedirte tu opinión.`;
+        mostrarStep('step-espera');
+        return;
+      }
+
+      // Todo bien — mostrar formulario
+      idOrdenVerificada = idOrden;
+
+      // Llenar resumen de la orden
+      document.getElementById('orden-info-box').innerHTML = `
+        <div class="orden-info-row"><span>Orden</span><span>#${data.id_orden}</span></div>
+        <div class="orden-info-row"><span>Cliente</span><span>${escHtml(data.cliente)}</span></div>
+        <div class="orden-info-row"><span>Vehículo</span><span>${escHtml(data.marca)} ${escHtml(data.modelo)}</span></div>
+        <div class="orden-info-row"><span>Fecha del servicio</span><span>${new Date(data.fecha_creacion).toLocaleDateString('es-MX',{dateStyle:'medium'})}</span></div>
+      `;
+      mostrarStep('step-resena');
+    })
+    .catch(err => {
+      mostrarError('msg-error', err.message || 'No se encontró una orden con ese número.');
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.innerHTML = 'Verificar orden →';
+    });
+}
+
+// ── Enviar reseña ──
+function enviarResena() {
+  ocultarError('msg-error-resena');
+
+  if (!estrellaSeleccionada) { mostrarError('msg-error-resena', 'Por favor selecciona una calificación.'); return; }
+  const comentario = document.getElementById('txt-comentario').value.trim();
+  if (!comentario) { mostrarError('msg-error-resena', 'Por favor escribe un comentario.'); return; }
+
+  const btn = document.getElementById('btn-enviar-resena');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enviando...';
+
+  fetch(`${API_URL}/resenas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_orden: idOrdenVerificada, calificacion: estrellaSeleccionada, comentario })
+  })
+  .then(async res => {
+    const data = await res.json();
+    if (!res.ok) return Promise.reject(data);
+    return data;
+  })
+  .then(() => { mostrarStep('step-exito'); })
+  .catch(err => {
+    mostrarError('msg-error-resena', err.message || 'Error al enviar la reseña. Intenta de nuevo.');
+    btn.disabled = false;
+    btn.innerHTML = 'Publicar mi reseña ✓';
+  });
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Si viene con ?orden=XX en la URL, pre-llenamos el campo
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const idParam = params.get('orden');
+  if (idParam) {
+    const el = document.getElementById('input-id-orden');
+    if (el) el.value = idParam;
+  }
+})();
+</script>
+</body>
+</html>
