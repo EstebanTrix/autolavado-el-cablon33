@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = ''; // Ya no se usa, pero lo dejo vacío
 
 const serviciosCatalogo = [
   // ── LAVADO ──
@@ -180,7 +180,7 @@ function goToForm() {
   goTo('form');
 }
 
-// ---- Submit del formulario ----
+// ---- Submit del formulario (VERSIÓN SIN API) ----
 function submitForm() {
   document.querySelectorAll('.form-error').forEach(e => e.classList.add('hidden'));
   const se = document.getElementById('server-error');
@@ -213,36 +213,9 @@ function submitForm() {
     total: totalCalculado
   };
 
-  const payload = {
-    nombre, telefono, correo, marca, modelo, placa, fecha,
-    vehiculo: isCamioneta ? 'Camioneta Grande' : 'Auto / SUV',
-    total: totalCalculado,
-    servicios: serviciosSeleccionados
-  };
-
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-
-  fetch(`${API_URL}/ordenes`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  })
-  .then(async res => {
-    const data = await res.json();
-    if (!res.ok) return Promise.reject(data);
-    return data;
-  })
-  .then(data => {
-    document.getElementById('hdnIdOrden').value = data.id_orden || '';
-    mostrarPaginaExito(nombre, data.id_orden || generarIdLocal(), itemsContratados);
-  })
-  .catch(() => {
-    const idLocal = generarIdLocal();
-    document.getElementById('hdnIdOrden').value = idLocal;
-    mostrarPaginaExito(nombre, idLocal, itemsContratados);
-  })
-  .finally(() => { btn.disabled = false; });
+  const idLocal = generarIdLocal();
+  document.getElementById('hdnIdOrden').value = idLocal;
+  mostrarPaginaExito(nombre, idLocal, itemsContratados);
 }
 
 function generarIdLocal() {
@@ -288,7 +261,7 @@ function formatearFecha(fechaStr) {
   } catch { return fechaStr; }
 }
 
-// ---- Generación del PDF MEJORADA (sin cortes) ----
+// ---- Generación del PDF ----
 function descargarTicketPDF() {
   if (!datosUltimaOrden) return;
   const numOrden = document.getElementById('hdnIdOrden').value || '—';
@@ -305,7 +278,6 @@ function descargarTicketPDF() {
   const fechaImpresion = new Date().toLocaleString('es-MX', { dateStyle:'medium', timeStyle:'short' });
   const fechaCita = datosUltimaOrden.fecha ? formatearFecha(datosUltimaOrden.fecha) : 'Por confirmar';
 
-  // Crear un contenedor con dimensiones adecuadas para A4
   const el = document.createElement('div');
   el.style.cssText = 'width:210mm;min-height:297mm;padding:15mm;background:#121214;color:#e2e8f0;font-family:"Poppins",Arial,sans-serif;box-sizing:border-box;';
   
@@ -368,9 +340,8 @@ function descargarTicketPDF() {
     </div>
   `;
 
-  // Opciones mejoradas para PDF sin cortes
   const opt = {
-    margin: [0.3, 0.3, 0.3, 0.3], // [top, right, bottom, left] en pulgadas
+    margin: [0.3, 0.3, 0.3, 0.3],
     filename: `Ticket_ElCablon33_Orden_${numOrden}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { 
@@ -382,7 +353,7 @@ function descargarTicketPDF() {
     },
     jsPDF: { 
       unit: 'in', 
-      format: 'letter', // 'a4' también funciona
+      format: 'letter',
       orientation: 'portrait' 
     }
   };
