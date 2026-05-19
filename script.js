@@ -298,6 +298,29 @@ function goToForm() {
   goTo('form');
 }
 
+// ---- Validar fecha y hora para agendar cita ----
+function validarFechaHora(fechaStr) {
+  if (!fechaStr) return true; // Si no seleccionó fecha, no validar (es opcional)
+  
+  const fecha = new Date(fechaStr);
+  const diaSemana = fecha.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado
+  const hora = fecha.getHours();
+  
+  // Verificar día: Domingo no está permitido (diaSemana === 0)
+  if (diaSemana === 0) {
+    alert('❌ Los domingos no atendemos. Puedes agendar de lunes a sábado.');
+    return false;
+  }
+  
+  // Verificar hora: debe estar entre 9 y 17 (9 AM a 5 PM)
+  if (hora < 9 || hora >= 17) {
+    alert('❌ Nuestro horario de atención es de 9:00 AM a 5:00 PM. Por favor selecciona otra hora.');
+    return false;
+  }
+  
+  return true;
+}
+
 // ---- Submit del formulario (VERSIÓN SIN API) ----
 function submitForm() {
   document.querySelectorAll('.form-error').forEach(e => e.classList.add('hidden'));
@@ -318,6 +341,12 @@ function submitForm() {
   if (!correo.includes('@')) { document.getElementById('err-email').classList.remove('hidden');   valid = false; }
   if (!marca)               { document.getElementById('err-marca').classList.remove('hidden');    valid = false; }
   if (!modelo)              { document.getElementById('err-modelo').classList.remove('hidden');   valid = false; }
+  
+  // Validar fecha y hora si el cliente seleccionó una
+  if (fecha && !validarFechaHora(fecha)) {
+    valid = false;
+  }
+  
   if (!valid) return;
 
   const itemsContratados = serviciosCatalogo.filter(s => serviciosSeleccionados.includes(s.id));
@@ -447,10 +476,10 @@ function descargarTicketPDF() {
           <tr style="background:#fb923c;">
             <th style="padding:12px;text-align:left;color:#121214;font-size:12px;font-weight:700;">Servicio</th>
             <th style="padding:12px;text-align:right;color:#121214;font-size:12px;font-weight:700;">Precio</th>
-           </tr>
+          </tr>
         </thead>
         <tbody>${lineasServicios}</tbody>
-       </table>
+      </table>
     </div>
 
     <div style="background:#1a1a1e;border:1px solid #2e2e35;border-radius:12px;padding:20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
