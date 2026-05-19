@@ -1,5 +1,3 @@
-const API_URL = ''; // Ya no se usa, pero lo dejo vacío
-
 const serviciosCatalogo = [
   // ── LAVADO ──
   {
@@ -67,6 +65,125 @@ let serviciosSeleccionados = [];
 let totalCalculado = 0;
 let datosUltimaOrden = null;
 
+// ========== SISTEMA DE CALIFICACIÓN PARA CLIENTES ==========
+let calificaciones = [];
+let ordenVerificada = null;
+let calificacionTemp = 0;
+
+// Cargar calificaciones guardadas al inicio
+function cargarCalificaciones() {
+  const guardadas = localStorage.getItem('calificaciones_cablon33');
+  if (guardadas) {
+    calificaciones = JSON.parse(guardadas);
+  }
+}
+
+// Guardar calificaciones
+function guardarCalificaciones() {
+  localStorage.setItem('calificaciones_cablon33', JSON.stringify(calificaciones));
+}
+
+// Verificar orden (solo clientes)
+function verificarOrden() {
+  const ordenInput = document.getElementById('orden-verificar').value.trim();
+  const errorDiv = document.getElementById('verificar-error');
+  
+  if (!ordenInput) {
+    errorDiv.textContent = '⚠️ Ingresa un número de orden.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  // Obtener órdenes guardadas del localStorage
+  const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
+  
+  // Verificar si la orden existe y no ha sido calificada
+  const orden = ordenesGuardadas.find(o => o.id === ordenInput);
+  
+  if (!orden) {
+    errorDiv.textContent = '⚠️ Número de orden no encontrado. Verifica tu código.';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+  
+  if (orden.calificado) {
+    errorDiv.textContent = '⚠️ Esta orden ya fue calificada anteriormente. ¡Gracias!';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  // Orden válida
+  errorDiv.classList.add('hidden');
+  ordenVerificada = ordenInput;
+  document.getElementById('verificar-orden').style.display = 'none';
+  document.getElementById('form-calificar').classList.remove('hidden');
+  document.getElementById('orden-verificada').innerHTML = `Calificando orden: <strong>${ordenInput}</strong>`;
+}
+
+function setCalificacion(valor) {
+  calificacionTemp = valor;
+  const stars = document.querySelectorAll('.star-calif');
+  stars.forEach((star, index) => {
+    if (index < valor) {
+      star.innerHTML = '★';
+      star.classList.add('active');
+    } else {
+      star.innerHTML = '☆';
+      star.classList.remove('active');
+    }
+  });
+}
+
+function enviarCalificacion() {
+  if (!ordenVerificada) {
+    alert('Primero verifica tu orden.');
+    return;
+  }
+  
+  if (calificacionTemp === 0) {
+    alert('Por favor selecciona una calificación de estrellas.');
+    return;
+  }
+  
+  const comentario = document.getElementById('comentario-calificacion').value.trim();
+  
+  // Guardar calificación
+  const nuevaCalificacion = {
+    id: Date.now(),
+    ordenId: ordenVerificada,
+    puntuacion: calificacionTemp,
+    comentario: comentario,
+    fecha: new Date().toLocaleDateString('es-MX')
+  };
+  
+  calificaciones.push(nuevaCalificacion);
+  guardarCalificaciones();
+  
+  // Marcar orden como calificada
+  const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
+  const ordenIndex = ordenesGuardadas.findIndex(o => o.id === ordenVerificada);
+  if (ordenIndex !== -1) {
+    ordenesGuardadas[ordenIndex].calificado = true;
+    localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
+  }
+  
+  // Mostrar éxito y resetear
+  document.getElementById('calif-exito').classList.remove('hidden');
+  document.getElementById('calif-error').classList.add('hidden');
+  
+  // Resetear formulario
+  setTimeout(() => {
+    document.getElementById('verificar-orden').style.display = 'block';
+    document.getElementById('form-calificar').classList.add('hidden');
+    document.getElementById('orden-verificar').value = '';
+    document.getElementById('comentario-calificacion').value = '';
+    setCalificacion(0);
+    ordenVerificada = null;
+    calificacionTemp = 0;
+    document.getElementById('calif-exito').classList.add('hidden');
+  }, 3000);
+}
+
 // ---- Navegación ----
 function goTo(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -89,6 +206,7 @@ function toggleTheme() {
 
 // ---- Catálogo ----
 document.addEventListener('DOMContentLoaded', () => {
+  cargarCalificaciones();
   renderCards();
   actualizarBarraFlotante();
 });
@@ -223,6 +341,16 @@ function generarIdLocal() {
 }
 
 function mostrarPaginaExito(nombre, idOrden, itemsContratados) {
+  // Guardar orden en localStorage para verificación de calificación
+  const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
+  ordenesGuardadas.push({
+    id: idOrden,
+    nombre: nombre,
+    fecha: new Date().toISOString(),
+    calificado: false
+  });
+  localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
+
   document.getElementById('success-nombre').innerText = nombre;
   document.getElementById('ticket-id-orden').innerText = idOrden;
 
@@ -319,10 +447,10 @@ function descargarTicketPDF() {
           <tr style="background:#fb923c;">
             <th style="padding:12px;text-align:left;color:#121214;font-size:12px;font-weight:700;">Servicio</th>
             <th style="padding:12px;text-align:right;color:#121214;font-size:12px;font-weight:700;">Precio</th>
-          </tr>
+           </tr>
         </thead>
         <tbody>${lineasServicios}</tbody>
-      </table>
+       </table>
     </div>
 
     <div style="background:#1a1a1e;border:1px solid #2e2e35;border-radius:12px;padding:20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
@@ -360,192 +488,3 @@ function descargarTicketPDF() {
 
   html2pdf().set(opt).from(el).save();
 }
-// ========== SISTEMA DE CALIFICACIÓN PARA CLIENTES ==========
-
-// Almacenamiento local de calificaciones
-let calificaciones = [];
-
-// Cargar calificaciones guardadas al inicio
-function cargarCalificaciones() {
-  const guardadas = localStorage.getItem('calificaciones_cablon33');
-  if (guardadas) {
-    calificaciones = JSON.parse(guardadas);
-  }
-  mostrarCalificaciones();
-}
-
-// Guardar calificaciones
-function guardarCalificaciones() {
-  localStorage.setItem('calificaciones_cablon33', JSON.stringify(calificaciones));
-  mostrarCalificaciones();
-}
-
-// Mostrar promedio y lista de calificaciones
-function mostrarCalificaciones() {
-  if (calificaciones.length === 0) {
-    document.getElementById('promedio-calificaciones').innerHTML = `
-      <div class="promedio-card">
-        <p style="color:#888;">Aún no hay calificaciones. ¡Sé el primero en calificar!</p>
-      </div>
-    `;
-    document.getElementById('lista-calificaciones').innerHTML = '';
-    return;
-  }
-
-  // Calcular promedio
-  const suma = calificaciones.reduce((acc, c) => acc + c.puntuacion, 0);
-  const promedio = (suma / calificaciones.length).toFixed(1);
-  const estrellasPromedio = '★'.repeat(Math.round(promedio)) + '☆'.repeat(5 - Math.round(promedio));
-  
-  document.getElementById('promedio-calificaciones').innerHTML = `
-    <div class="promedio-card">
-      <div class="promedio-numero">${promedio}/5</div>
-      <div class="promedio-estrellas">${estrellasPromedio}</div>
-      <p style="color:#888; margin-top:8px;">Basado en ${calificaciones.length} calificación(es)</p>
-    </div>
-  `;
-
-  // Mostrar comentarios
-  const listaHtml = calificaciones.slice().reverse().map(c => `
-    <div class="comentario-item">
-      <div class="comentario-header">
-        <div class="comentario-estrellas">${'★'.repeat(c.puntuacion)}${'☆'.repeat(5 - c.puntuacion)}</div>
-        <div class="comentario-fecha">${c.fecha}</div>
-      </div>
-      ${c.comentario ? `<p class="comentario-texto">"${escapeHtml(c.comentario)}"</p>` : ''}
-    </div>
-  `).join('');
-  
-  document.getElementById('lista-calificaciones').innerHTML = listaHtml;
-}
-
-// Verificar orden (solo clientes)
-let ordenVerificada = null;
-let calificacionTemp = 0;
-
-function verificarOrden() {
-  const ordenInput = document.getElementById('orden-verificar').value.trim();
-  const errorDiv = document.getElementById('verificar-error');
-  
-  if (!ordenInput) {
-    errorDiv.textContent = '⚠️ Ingresa un número de orden.';
-    errorDiv.classList.remove('hidden');
-    return;
-  }
-
-  // Obtener órdenes guardadas del localStorage
-  const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
-  
-  // Verificar si la orden existe y no ha sido calificada
-  const orden = ordenesGuardadas.find(o => o.id === ordenInput);
-  
-  if (!orden) {
-    errorDiv.textContent = '⚠️ Número de orden no encontrado. Verifica tu código.';
-    errorDiv.classList.remove('hidden');
-    return;
-  }
-  
-  if (orden.calificado) {
-    errorDiv.textContent = '⚠️ Esta orden ya fue calificada anteriormente. ¡Gracias!';
-    errorDiv.classList.remove('hidden');
-    return;
-  }
-
-  // Orden válida
-  errorDiv.classList.add('hidden');
-  ordenVerificada = ordenInput;
-  document.getElementById('verificar-orden').style.display = 'none';
-  document.getElementById('form-calificar').classList.remove('hidden');
-  document.getElementById('orden-verificada').innerHTML = `Calificando orden: <strong>${ordenInput}</strong>`;
-}
-
-function setCalificacion(valor) {
-  calificacionTemp = valor;
-  const stars = document.querySelectorAll('.star-calif');
-  stars.forEach((star, index) => {
-    if (index < valor) {
-      star.innerHTML = '★';
-      star.classList.add('active');
-    } else {
-      star.innerHTML = '☆';
-      star.classList.remove('active');
-    }
-  });
-}
-
-function enviarCalificacion() {
-  if (!ordenVerificada) {
-    alert('Primero verifica tu orden.');
-    return;
-  }
-  
-  if (calificacionTemp === 0) {
-    alert('Por favor selecciona una calificación de estrellas.');
-    return;
-  }
-  
-  const comentario = document.getElementById('comentario-calificacion').value.trim();
-  
-  // Guardar calificación
-  const nuevaCalificacion = {
-    id: Date.now(),
-    ordenId: ordenVerificada,
-    puntuacion: calificacionTemp,
-    comentario: comentario,
-    fecha: new Date().toLocaleDateString('es-MX')
-  };
-  
-  calificaciones.push(nuevaCalificacion);
-  guardarCalificaciones();
-  
-  // Marcar orden como calificada
-  const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
-  const ordenIndex = ordenesGuardadas.findIndex(o => o.id === ordenVerificada);
-  if (ordenIndex !== -1) {
-    ordenesGuardadas[ordenIndex].calificado = true;
-    localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
-  }
-  
-  // Mostrar éxito y resetear
-  document.getElementById('calif-exito').classList.remove('hidden');
-  document.getElementById('calif-error').classList.add('hidden');
-  
-  // Resetear formulario
-  setTimeout(() => {
-    document.getElementById('verificar-orden').style.display = 'block';
-    document.getElementById('form-calificar').classList.add('hidden');
-    document.getElementById('orden-verificar').value = '';
-    document.getElementById('comentario-calificacion').value = '';
-    setCalificacion(0);
-    ordenVerificada = null;
-    calificacionTemp = 0;
-    document.getElementById('calif-exito').classList.add('hidden');
-  }, 3000);
-}
-
-// Modificar mostrarPaginaExito para guardar la orden
-const mostrarPaginaExitoOriginal = mostrarPaginaExito;
-window.mostrarPaginaExito = function(nombre, idOrden, itemsContratados) {
-  // Guardar orden en localStorage
-  const ordenesGuardadas = JSON.parse(localStorage.getItem('ordenes_cablon33') || '[]');
-  ordenesGuardadas.push({
-    id: idOrden,
-    nombre: nombre,
-    fecha: new Date().toISOString(),
-    calificado: false
-  });
-  localStorage.setItem('ordenes_cablon33', JSON.stringify(ordenesGuardadas));
-  
-  // Llamar función original
-  mostrarPaginaExitoOriginal(nombre, idOrden, itemsContratados);
-};
-
-// Reemplazar la función original
-window.mostrarPaginaExito = mostrarPaginaExito;
-
-// Inicializar al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-  cargarCalificaciones();
-  renderCards();
-  actualizarBarraFlotante();
-});
